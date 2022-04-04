@@ -1,3 +1,69 @@
+const getAlgbCourse = () => {
+    const apiLink = 'https://api.thegraph.com/subgraphs/name/cryptoalgebra/algebra'
+    const algbCourseQuery = `
+            {
+              bundles {
+                maticPriceUSD
+              }
+              token(id: "0x0169ec1f8f639b32eec6d923e24c2a2ff45b9dd6") {
+                derivedMatic
+              }
+            }
+            `
+    return fetch(apiLink, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            query: algbCourseQuery
+        })
+    })
+        .then(res => res.json())
+        .then(res => res.data.token.derivedMatic * res.data.bundles[0].maticPriceUSD)
+        .catch(e => console.log(e.message()))
+
+}
+
+const getAPR = () => {
+    const apiLink = 'https://api.thegraph.com/subgraphs/name/iliaazhel/staker'
+    const algbCourseQuery = `
+            query stake {
+                histories(where: { date_gte: ${Math.floor(new Date(`${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`).getTime() / 1000)},}) {
+                    ALGBbalance
+                    ALGBfromVault
+                }
+            }`
+    return fetch(apiLink, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            query: algbCourseQuery
+        })
+    })
+        .then(res => res.json())
+        .then(res => ethers.BigNumber.from(res.data.histories[0].ALGBfromVault).mul(ethers.BigNumber.from(ethers.utils.parseUnits('365', 18))).mul(ethers.BigNumber.from(100)).div(ethers.BigNumber.from(res.data.histories[0].ALGBbalance)))
+        .then(res => Math.floor(ethers.utils.formatEther(res)))
+        .catch(e => console.log(e.message()))
+
+}
+
+const checkInput = (e) => {
+    const allowKeys = ['Delete', 'ArrowLeft', 'ArrowRight', 'Backspace']
+    const techKeys = [65, 67, 82, 86]
+    const regex = /^[0-9]*[.,]?[0-9]*$/
+
+    if (techKeys.includes(e.keyCode) && (e.ctrlKey || e.metaKey)) return
+
+    if (allowKeys.includes(e.key)) return
+
+    if (!regex.test(e.key)) {
+        e.preventDefault()
+    }
+}
+
 (function () {
     class Calculator extends HTMLElement {
 
@@ -68,6 +134,7 @@
                color: white;
                text-align: right;
                padding: 0.5rem;
+               width: 100%;
             }
             
             .calculator__input__currency {
@@ -105,6 +172,16 @@
             }
             .button:hover {
                opacity: .8;
+            }
+            
+            .price span:after {
+                content: "$";
+                margin-left: 2px;
+            }
+            
+            .price:disabled {
+                opacity: .6;
+                cursor: default;
             }
             
             .help {
@@ -151,6 +228,11 @@
             .calculator__result__input div {
                 font-size: 1.25rem;
                 font-weight: 600;
+            }
+            
+            .calculator__result__input div:after {
+                content: "$";
+                margin-left: 2px;
             }
             .calculator__result__input button {
                 background: transparent;
@@ -227,7 +309,7 @@
                             <div class="">
                                  <div class="">ALGB staked</div>
                                   <div class="calculator__input">
-                                     <div>
+                                     <div style="width: 100%">
                                         <div class="calculator__input__input">
                                             <input pattern="^[0-9]*[.,]?[0-9]*$" inputmode="decimal" min="0" placeholder="0.00"  class="start-value" value="">
                                             <div class="">USD</div>
@@ -242,20 +324,20 @@
                                  </div>
                             </div>
                             <div class="calculator__amounts">
-                                <button class="button">$100</button>
-                                <button class="button">$1000</button>
-                                <button class="button">MY BALANCE</button>
+                                <button class="button price"><span>100</span></button>
+                                <button class="button price"><span>1000</span></button>
+                                <button class="button price">MY BALANCE</button>
                                 <span class="help">
                                     <svg viewBox="0 0 24 24" width="16px" height="16px" color="textSubtle" xmlns="http://www.w3.org/2000/svg" class="sc-5a69fd5e-0 doneTG"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM11 16H13V18H11V16ZM12.61 6.04C10.55 5.74 8.73 7.01 8.18 8.83C8 9.41 8.44 10 9.05 10H9.25C9.66 10 9.99 9.71 10.13 9.33C10.45 8.44 11.4 7.83 12.43 8.05C13.38 8.25 14.08 9.18 14 10.15C13.9 11.49 12.38 11.78 11.55 13.03C11.55 13.04 11.54 13.04 11.54 13.05C11.53 13.07 11.52 13.08 11.51 13.1C11.42 13.25 11.33 13.42 11.26 13.6C11.25 13.63 11.23 13.65 11.22 13.68C11.21 13.7 11.21 13.72 11.2 13.75C11.08 14.09 11 14.5 11 15H13C13 14.58 13.11 14.23 13.28 13.93C13.3 13.9 13.31 13.87 13.33 13.84C13.41 13.7 13.51 13.57 13.61 13.45C13.62 13.44 13.63 13.42 13.64 13.41C13.74 13.29 13.85 13.18 13.97 13.07C14.93 12.16 16.23 11.42 15.96 9.51C15.72 7.77 14.35 6.3 12.61 6.04Z"></path></svg>
                                 </span>
                             </div>
                             <div class="">Staked for</div>
                             <div class="calculator__durations">
-                                <button class="button">1D</button>
-                                <button class="button">7D</button>
-                                <button class="button">30D</button>
-                                <button class="button">1Y</button>
-                                <button class="button">5Y</button>
+                                <button class="button period" value="7">7D</button>
+                                <button class="button period" value="30">30D</button>
+                                <button class="button period" value="90">3M</button>
+                                <button class="button period" value="180">6M</button>
+                                <button class="button period" value="365">1Y</button>
                             </div>
                         </div>
                         <div class="arrow-down">
@@ -265,7 +347,7 @@
                             <h5 class="">ROI at current rates</h5>
                             <div class="">
                                 <div class="calculator__result__input">
-                                    <div class="">$ 0.00</div>
+                                    <div class="">0.00</div>
                                     <button class="">
                                         <svg viewBox="0 0 19 19" color="primary" width="20px" xmlns="http://www.w3.org/2000/svg" class="sc-5a69fd5e-0 dwUojQ"><path d="M0 15.46V18.5C0 18.78 0.22 19 0.5 19H3.54C3.67 19 3.8 18.95 3.89 18.85L14.81 7.94L11.06 4.19L0.15 15.1C0.0500001 15.2 0 15.32 0 15.46ZM17.71 5.04C18.1 4.65 18.1 4.02 17.71 3.63L15.37 1.29C14.98 0.899998 14.35 0.899998 13.96 1.29L12.13 3.12L15.88 6.87L17.71 5.04Z"></path></svg>
                                     </button>
@@ -295,6 +377,10 @@
             </div>
         `
             this.albgCourse = 0
+            this.aprPercent = 0
+            this.isAlgb = false
+            this.inputValue = ''
+            this.stakeDuration = 7 / 365
 
             this.attachShadow({mode: 'open'})
 
@@ -305,18 +391,31 @@
             const main = DOM.documentElement.querySelector('#main-point')
 
             this.startInput = DOM.documentElement.querySelector('.start-value')
-            // this.startInput.addEventListener('keydown', this.startInputChange)
-            this.startInput.addEventListener('keydown', this.startInputChange)
-            this.startInput.addEventListener('input', (e) => e.target.value)
+            this.startInput.addEventListener('keypress', checkInput)
+            this.startInput.addEventListener('input', (e) => this.startInputChange(e))
+
+            this.secondCurrency = DOM.documentElement.querySelector('.calculator__input__currency')
+
+            this.calculatorSwap = DOM.documentElement.querySelector('.calculator__swap')
+            this.calculatorSwap.addEventListener('click', () => this.changeCurrency())
+
+            this.inputCurrency = DOM.documentElement.querySelector('.calculator__input__input div')
+
+            this.amountButtons = DOM.documentElement.querySelectorAll('.price')
+            this.amountButtons.forEach(el => this.changeAmount(el))
+
+            this.durationButtons = DOM.documentElement.querySelectorAll('.calculator__durations .period')
+            this.durationButtons.forEach(el => el.addEventListener('click', (e) => this.changeDuration(e.target.value)))
+
+            this.resultInput = DOM.documentElement.querySelector('.calculator__result__input div')
 
             this.calculator = main
             this.shadowRoot.append(STYLE, main)
         }
 
         async connectedCallback() {
-            this.albgCourse = await this.getAlgbCourse()
-
-            // console.log(this.albgCourse, this.balance)
+            this.albgCourse = await getAlgbCourse()
+            this.aprPercent = await getAPR() / 100
         }
 
         attributeChangedCallback(attrName, oldValue, newValue) {
@@ -325,62 +424,74 @@
             }
         }
 
-        getAlgbCourse() {
-            const apiLink = 'https://api.thegraph.com/subgraphs/name/cryptoalgebra/algebra'
-            const algbCourseQuery = `
-            {
-              bundles {
-                maticPriceUSD
-              }
-              token(id: "0x0169ec1f8f639b32eec6d923e24c2a2ff45b9dd6") {
-                derivedMatic
-              }
-            }
-            `
-            return fetch(apiLink, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    query: algbCourseQuery
-                })
-            })
-                .then(res => res.json())
-                .then(res => res.data.token.derivedMatic * res.data.bundles[0].maticPriceUSD)
-                .catch(e => console.log(e.message()))
-
-        }
-
         startInputChange(e) {
-            Calculator.checkInput(e)
-
-            console.log(e.target.value)
+            this.inputValue = e.target.value
+            this.calcSecondCurrency(this.inputValue)
+            this.calcIncome()
         }
 
-        static checkInput(e) {
-            const allowKeys = ['Delete', 'ArrowLeft', 'ArrowRight', 'Backspace']
-            const techKeys = [65, 67, 82, 86]
-            const regex = /^[0-9]*[.,]?[0-9]*$/
-
-            if (techKeys.includes(e.keyCode) && (e.ctrlKey || e.metaKey)) return
-
-            if (allowKeys.includes(e.key)) return
-
-            if (!regex.test(e.key)) {
-                e.preventDefault()
+        calcSecondCurrency(e) {
+            const inputValue = parseFloat(e === '' ? 0 : e)
+            if (this.isAlgb) {
+                this.secondCurrency.textContent = `${inputValue * this.albgCourse} USD`
+            } else {
+                this.secondCurrency.textContent = `${inputValue / this.albgCourse} ALGB`
             }
         }
 
+        changeCurrency() {
+            this.isAlgb = !this.isAlgb
+
+            this.calcSecondCurrency(this.inputValue)
+            this.calcIncome()
+
+            if (this.isAlgb) {
+                this.inputCurrency.textContent = 'ALGB'
+            } else {
+                this.inputCurrency.textContent = 'USD'
+            }
+        }
+
+        changeAmount(el) {
+            if (!this.attributes.balance.value && el.innerHTML === 'MY BALANCE') {
+                el.disabled = true
+            }
+            el.addEventListener('click', (e) => {
+                if (e.target.textContent !== 'MY BALANCE') {
+                    if (this.isAlgb) {
+                        this.changeCurrency()
+                    }
+                    this.startInput.value = e.target.textContent
+                    this.calcSecondCurrency(e.target.textContent)
+                    console.log(this.balance)
+                } else {
+                    this.startInput.value = this.isAlgb ? this.balance : this.balance * this.albgCourse
+                    this.calcSecondCurrency(this.isAlgb ? this.balance : this.balance * this.albgCourse)
+                }
+            })
+        }
+
+        changeDuration(days) {
+            this.stakeDuration = days / 365
+            this.calcIncome()
+        }
+
+        calcIncome() {
+            if (this.inputValue === '') return
+
+            const earnTicks = 12 * 30 * 24
+            const amount = this.isAlgb ? parseFloat(this.inputValue) : parseFloat(this.inputValue) * this.albgCourse
+
+            this.resultInput.textContent = (amount * (1 + this.aprPercent / earnTicks) ** (this.stakeDuration * earnTicks)).toString()
+        }
 
         get balance() {
-            return this.calculator.getAttribute('balance')
+            return this.calculator?.getAttribute('balance')
         }
 
         set balance(accountBalance) {
             this.setAttribute('balance', accountBalance)
         }
-
     }
 
     customElements.define('calculator-algb', Calculator)
