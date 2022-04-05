@@ -19,5 +19,9 @@
   "bugs": {
     "url": "https://github.com/cryptoalgebra/widgets/issues"
   },
-  "homepage": "https://github.com/cryptoalgebra/widgets#readme"
+  "homepage": "https://github.com/cryptoalgebra/widgets#readme",
+  "dependencies": {
+    "@ethersproject/bignumber": "^5.6.0",
+    "@ethersproject/units": "^5.6.0"
+  }
 }
