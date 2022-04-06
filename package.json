@@ -1,13 +1,13 @@
 {
   "name": "algebra-packeges",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "",
   "bin": "./dist/bundle.js",
   "main": "dist/bundle.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "./node_modules/.bin/webpack",
-    "dev": "./node_modules/.bin/webpack --watch"
+    "build": "webpack",
+    "dev": "webpack --watch"
   },
   "files": [
     "dist/"
