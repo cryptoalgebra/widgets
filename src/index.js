@@ -164,6 +164,11 @@ const checkPaste = (e) => {
         }
 
         async connectedCallback() {
+
+            if (!this.balance) {
+                this.amountButtons[this.amountButtons.length - 1].remove()
+            }
+
             this.albgCourse = await getAlgbCourse()
             this.aprPercent = await getAPR()
 
@@ -172,9 +177,7 @@ const checkPaste = (e) => {
             this.amountButtons.forEach(el => el.disabled = false)
 
             this.footerApr.textContent = (this.aprPercent * 100).toFixed(2) + '%'
-            if (this.attributes.length === 0) {
-                this.amountButtons[this.amountButtons.length - 1].disabled = true
-            }
+
         }
 
         attributeChangedCallback(attrName, oldValue, newValue) {
