@@ -1,3 +1,6 @@
+import {BigNumber} from "@ethersproject/bignumber"
+import {formatEther, parseUnits} from "@ethersproject/units"
+
 const getAlgbCourse = () => {
     const apiLink = 'https://api.thegraph.com/subgraphs/name/cryptoalgebra/algebra'
     const algbCourseQuery = `
@@ -44,8 +47,8 @@ const getAPR = () => {
         })
     })
         .then(res => res.json())
-        .then(res => res.data.histories.map(item => ethers.BigNumber.from(item.ALGBfromVault).mul(ethers.BigNumber.from(ethers.utils.parseUnits('365', 18))).mul(ethers.BigNumber.from(100)).div(ethers.BigNumber.from(item.ALGBbalance))))
-        .then(res => Math.floor(ethers.utils.formatEther(res.reduce((prev, cur) => prev.add(cur), ethers.BigNumber.from('0')))) / res.length)
+        .then(res => res.data.histories.map(item => BigNumber.from(item.ALGBfromVault).mul(BigNumber.from(parseUnits('365', 18))).mul(BigNumber.from(100)).div(BigNumber.from(item.ALGBbalance))))
+        .then(res => Math.floor(formatEther(res.reduce((prev, cur) => prev.add(cur), BigNumber.from('0')))) / res.length)
         .then(res => res / 100)
         .catch(e => console.error(e.message))
 
