@@ -3,7 +3,6 @@ import {formatEther, parseUnits} from "@ethersproject/units"
 import html from './calc.html'
 import style from './calc.css'
 
-console.log(style)
 const getAlgbCourse = () => {
     const apiLink = 'https://api.thegraph.com/subgraphs/name/cryptoalgebra/algebra'
     const algbCourseQuery = `
@@ -35,7 +34,7 @@ const getAPR = () => {
     const apiLink = 'https://api.thegraph.com/subgraphs/name/iliaazhel/staker'
     const algbCourseQuery = `
             query stake {
-                histories(where: { date_gte: 1642626000}) {
+                histories(where: { date_gte: ${Math.floor(new Date(`${new Date().getFullYear()}-${new Date().getMonth()}-${new Date().getDate()}`).getTime() / 1000)}}) {
                     ALGBbalance
                     ALGBfromVault
                 }
@@ -60,13 +59,27 @@ const getAPR = () => {
 const checkInput = (e) => {
     const allowKeys = ['Delete', 'ArrowLeft', 'ArrowRight', 'Backspace']
     const techKeys = [65, 67, 82, 86]
-    const regex = /^[0-9]*[.,]?[0-9]*$/
+    const regex = /^[0-9]*[.]?[0-9]*$/
+
+    if (e.key === '.' && e.target.value === '') {
+        e.preventDefault()
+        e.target.value = '0.'
+        return;
+    }
 
     if (techKeys.includes(e.keyCode) && (e.ctrlKey || e.metaKey)) return
 
     if (allowKeys.includes(e.key)) return
 
-    if (!regex.test(e.key)) {
+    if (!regex.test(e.key) || (e.key === '.' && e.target.value.indexOf('.') > 0 ) ) {
+        e.preventDefault()
+    }
+}
+
+const checkPaste = (e) => {
+    const data = e.clipboardData || window.clipboardData
+
+    if (!/^[0-9]*[.]?[0-9]*$/.test(data.getData('Text'))){
         e.preventDefault()
     }
 }
@@ -102,6 +115,7 @@ const checkInput = (e) => {
             this.startInput.addEventListener('keypress', checkInput)
             this.startInput.addEventListener('input', e => this.startInputChange(e))
             this.startInput.addEventListener('focus', () => this.closeResultInput())
+            this.startInput.addEventListener('paste', (e) => checkPaste(e))
             this.startInput.disabled = true
             this.startInput.placeholder = 'Loading...'
 
@@ -112,6 +126,8 @@ const checkInput = (e) => {
 
             this.inputCurrency = DOM.documentElement.querySelector('.calculator__input__input div')
 
+            this.inputSymbol = DOM.documentElement.querySelector('.calculator__input__symbol')
+
             this.amountButtons = DOM.documentElement.querySelectorAll('.price')
             this.amountButtons.forEach(el => this.changeAmount(el))
 
@@ -121,6 +137,7 @@ const checkInput = (e) => {
             this.resultInput = DOM.documentElement.querySelector('.calculator__result__input input')
             this.resultInput.addEventListener('input', (e) => this.resultInputChange(e))
             this.resultInput.addEventListener('keypress', checkInput)
+            this.resultInput.addEventListener('paste', (e) => checkPaste(e))
 
             this.resultDiv = DOM.documentElement.querySelector('.calculator__result__input div')
             this.resultDiv.addEventListener('click', () => this.toggleResultInput())
@@ -167,6 +184,12 @@ const checkInput = (e) => {
         }
 
         startInputChange(e) {
+
+            if (e.inputType === 'insertText' && !/^[0-9]*[.]?[0-9]*$/.test(e.data)){
+                e.preventDefault()
+                return
+            }
+
             this.inputValue = e.target.value
             this.calcSecondCurrency(this.inputValue)
             this.calcIncome()
@@ -178,22 +201,28 @@ const checkInput = (e) => {
             const inputValue = parseFloat(e === '' ? 0 : e)
 
             if (this.isAlgb) {
-                this.secondCurrency.textContent = `${inputValue * this.albgCourse} USD`
+                this.secondCurrency.textContent = `${inputValue * this.albgCourse}`
             } else {
-                this.secondCurrency.textContent = `${inputValue / this.albgCourse} ALGB`
+                this.secondCurrency.textContent = `${inputValue / this.albgCourse}`
             }
         }
 
         changeCurrency() {
             this.isAlgb = !this.isAlgb
 
-            this.calcSecondCurrency(this.startInput.value)
-            this.calcIncome()
+            const temp = this.startInput.value
+            this.startInput.value = this.secondCurrency.textContent
+            this.secondCurrency.textContent = temp
+
+            // this.calcSecondCurrency(this.startInput.value)
+            // this.calcIncome()
 
             if (this.isAlgb) {
                 this.inputCurrency.textContent = 'ALGB'
+                this.inputSymbol.textContent = 'USD'
             } else {
                 this.inputCurrency.textContent = 'USD'
+                this.inputSymbol.textContent = 'ALGB'
             }
         }
 
@@ -220,9 +249,10 @@ const checkInput = (e) => {
 
             if (this.openResultInput) {
                 this.calcStartAmount(this.resInputValue)
-            } else {
-                this.calcIncome()
+                this.calcIncomePercent(this.resultInput.value)
+                return
             }
+            this.calcIncome()
             this.calcIncomePercent(this.resultDiv.textContent)
         }
 
@@ -278,13 +308,15 @@ const checkInput = (e) => {
 
             const earnTicks = 12 * 30 * 24
             const _amount = parseFloat(amount === '' ? 0 : amount)
+            const resInputVal = this.resultInput.value === '' ? 0 : this.resultInput.value
 
             this.startInput.value = _amount / ((1 + this.aprPercent / earnTicks) ** (this.stakeDuration * earnTicks) -1)
-            this.calcIncomePercent(this.resultInput.value)
+            this.calcIncomePercent(resInputVal)
+            this.resAlgb.textContent = '~ ' + (_amount / this.albgCourse).toFixed(2) + ' ALGB'
         }
 
         calcIncomePercent(income) {
-            if (this.startInput.value === '') {
+            if (this.startInput.value === '' || income === '' || +this.startInput.value === 0) {
                 this.incomePercent.textContent = '+ 0.00%'
                 return
             }
