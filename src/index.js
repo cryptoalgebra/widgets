@@ -111,6 +111,8 @@ const checkPaste = (e) => {
 
             const main = DOM.documentElement.querySelector('#main-point')
 
+            this.currentAprPlaceholder = DOM.documentElement.querySelector('#currentApr')
+
             this.startInput = DOM.documentElement.querySelector('.start-value')
             this.startInput.addEventListener('keypress', checkInput)
             this.startInput.addEventListener('input', e => this.startInputChange(e))
@@ -145,19 +147,7 @@ const checkPaste = (e) => {
             this.resCurrency = DOM.documentElement.querySelector('.result__currency')
             this.resAlgb = DOM.documentElement.querySelector('.algb__income')
 
-            this.showResultInput = DOM.documentElement.querySelector('.show__result__input')
-            this.showResultInput.addEventListener('click', () => this.toggleResultInput())
-
             this.incomePercent = DOM.documentElement.querySelector('.calculator__result__percent')
-
-            this.buttonHide = DOM.documentElement.querySelector('.calculator__footer__toggle')
-            this.buttonHide.addEventListener('click', () => this.showDetails())
-
-            this.buttonHideSvg = DOM.documentElement.querySelector('.calculator__footer__toggle svg')
-
-            this.footerContent = DOM.documentElement.querySelector('.calculator__footer__content')
-
-            this.footerApr = DOM.documentElement.querySelector('.calculator__footer__apr span')
 
             this.calculator = main
             this.shadowRoot.append(STYLE, main)
@@ -172,12 +162,11 @@ const checkPaste = (e) => {
             this.albgCourse = await getAlgbCourse()
             this.aprPercent = await getAPR()
 
-            this.startInput.placeholder = '0.00'
+            this.currentAprPlaceholder.textContent = `Current APR: ${(+this.aprPercent * 100).toPrecision(2)}%`
+            this.startInput.placeholder = 'Enter an amount'
             this.startInput.disabled = false
             this.amountButtons.forEach(el => el.disabled = false)
-
-            this.footerApr.textContent = (this.aprPercent * 100).toFixed(2) + '%'
-
+            this.durationButtons.forEach(el => el.disabled = false)
         }
 
         attributeChangedCallback(attrName, oldValue, newValue) {
@@ -204,9 +193,9 @@ const checkPaste = (e) => {
             const inputValue = parseFloat(e === '' ? 0 : e)
 
             if (this.isAlgb) {
-                this.secondCurrency.textContent = `${inputValue * this.albgCourse}`
+                this.secondCurrency.textContent = `${(inputValue * this.albgCourse).toFixed(2)}`
             } else {
-                this.secondCurrency.textContent = `${inputValue / this.albgCourse}`
+                this.secondCurrency.textContent = `${(inputValue / this.albgCourse).toFixed(2)}`
             }
         }
 
@@ -232,7 +221,7 @@ const checkPaste = (e) => {
         changeAmount(el) {
             el.disabled = true
             el.addEventListener('click', (e) => {
-                if (e.target.textContent !== 'MY BALANCE') {
+                if (e.target.textContent !== 'My balance') {
                     if (this.isAlgb) {
                         this.changeCurrency()
                     }
@@ -266,18 +255,6 @@ const checkPaste = (e) => {
             const res = this.isAlgb ? ((amount - _amount) * this.albgCourse).toFixed(2) : (amount - _amount).toFixed(2)
             this.resultDiv.textContent = res
             this.resAlgb.textContent = '~ ' + (res / this.albgCourse).toFixed(2) + ' ALGB'
-        }
-
-        showDetails() {
-            this.openDetails = !this.openDetails
-
-            if (this.openDetails) {
-                this.buttonHideSvg.style.transform = 'rotate(180deg)'
-                this.footerContent.style.display = 'block'
-            } else {
-                this.buttonHideSvg.style.transform = 'rotate(0deg)'
-                this.footerContent.style.display = 'none'
-            }
         }
 
         resultInputChange(e) {

@@ -2,8 +2,17 @@
     font-family: 'SF-Pro-Display', sans-serif;
 }
 
+#currentApr {
+    padding: 6px 10px;
+    background-color: var(--current-apr-bg);
+    color: var(--current-apr-text);
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    text-align: center;
+}
+
 .calculator {
-    border-radius: 24px;
     width: 345px;
     background-color: var(--calc-bg);
     color: white;
@@ -41,18 +50,26 @@
 
 .calculator__input {
     background-color: var(--calc-input);
-    border-radius: 12px;
+    color: var(--calc-input-text);
+    border-radius: 8px;
     padding: 1rem;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    margin: .5rem 0;
+    margin: 1rem 0;
 }
 
 .calculator__input__input {
     display: flex;
     justify-content: flex-end;
     align-items: center;
+}
+
+.calculator__input__input, .calculator__result__input {
+    background-color: var(--calc-input-field-bg);
+    padding: 0 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
 }
 
 .calculator__input__input input {
@@ -63,11 +80,12 @@
     text-align: right;
     padding: 0.5rem;
     width: 100%;
+    font-size: 15px;
 }
 
 .calculator__input__currency {
     text-align: right;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .calculator__swap {
@@ -75,31 +93,37 @@
     border: none;
     stroke: white;
     fill: white;
-    padding: 0 .5rem;
     cursor: pointer;
+    margin-left: 1rem;
 }
 .calculator__swap:hover {
     opacity: .8;
 }
 
 .calculator__amounts {
-    display: grid;
-    grid-template-columns: 68px 68px 120px 16px;
-    column-gap: 0.75rem;
-    margin: .5rem 0;
+    display: flex;
+    margin: 1rem 0;
 }
 
 .button {
-    color: #2797ff;
-    background: #385368;
+    color: var(--button-text);
+    background: var(--button-bg);
     border: none;
     border-radius: 8px;
     font-weight: 600;
     padding: .25rem .5rem;
     cursor: pointer;
+    margin-right: 8px;
+    font-size: 14px;
+    width: 100%;
+    white-space: nowrap;
+    display: inline-block;
 }
 .button:hover {
     opacity: .8;
+}
+.button:last-of-type {
+    margin-right: 0;
 }
 
 .price span:before {
@@ -112,68 +136,37 @@
     cursor: default;
 }
 
-.help {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    fill: #2797ff;
-    cursor: pointer;
-}
-.help:hover {
-    opacity: .8;
-}
-.help:hover + .help-content{
-    display: block;
-}
-
-.help-content {
-    background-color: white;
-    color: black;
-    position: absolute;
-    padding: 1rem;
-    border-radius: 12px;
-    width: 280px;
-    top: 70px;
-    display: none;
-}
-.help-content:after {
-    content: "";
-    width: 7px;
-    height: 7px;
-    transform: rotate(42deg);
-    background-color: white;
-    position: absolute;
-    top: 47px;
-    right: 10px;
-}
-
 .calculator__durations {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    column-gap: .5rem;
-    margin: .5rem 0;
+    display: flex;
+    margin: 1rem 0;
 }
 .calculator__durations input {
     display: none;
 }
 .calculator__durations label {
     text-align: center;
+    user-select: none;  
 }
 .calculator__durations input:checked + .period{
-    background: black;
+    background: var(--button-bg--selected);
+    color: var(--button-text--selected);
+}
+
+.calculator__durations input:disabled + .period{
+    opacity: 0.8;
 }
 
 .arrow-down {
     display: flex;
     justify-content: center;
     fill: white;
-    margin: 1.5rem 0;
+    margin: 1rem 0;
 }
 
 .calculator__result {
-    background: #385368;
-    border-radius: 12px;
-    padding: 1.5rem;
+    background: var(--calc-input);
+    border-radius: 8px;
+    padding: 1rem;
 }
 .calculator__result h5 {
     margin: 0;
@@ -184,9 +177,10 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 1rem 0;
+    margin-bottom: 0.5rem;
     font-size: 1.25rem;
     font-weight: 600;
+    padding: 0.5rem 12px;
 }
 .calculator__result__input input {
     display: none;
@@ -197,7 +191,7 @@
     outline: none;
     font-size: 1.25rem;
     font-weight: 600;
-    color: white;
+    color: var(--calc-input-text);
     padding: 0;
 }
 .calculator__result__input div {
@@ -216,10 +210,10 @@
 
 .algb__income, .calculator__result__percent {
     font-size: 0.85rem;
-    color: green;
+    color: var(--profit-text);
 }
 .algb__income {
-    color: white;
+    color: var(--calc-input-text);
     margin-right: .5rem;
 }
 
