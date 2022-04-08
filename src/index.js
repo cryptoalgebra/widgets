@@ -34,7 +34,7 @@ const getAPR = () => {
     const apiLink = 'https://api.thegraph.com/subgraphs/name/iliaazhel/staker'
     const algbCourseQuery = `
             query stake {
-                histories(where: { date_gte: ${Math.floor(new Date(`${new Date().getFullYear()}-${new Date().getMonth()}-${new Date().getDate()}`).getTime() / 1000)}}) {
+                histories(where: { date_gte: ${Math.floor(Date.now() / 1000) - 31 * 24 * 60 * 60}}) {
                     ALGBbalance
                     ALGBfromVault
                 }
@@ -66,6 +66,7 @@ const checkInput = (e) => {
         e.target.value = '0.'
         return;
     }
+
 
     if (techKeys.includes(e.keyCode) && (e.ctrlKey || e.metaKey)) return
 
@@ -162,7 +163,7 @@ const checkPaste = (e) => {
             this.albgCourse = await getAlgbCourse()
             this.aprPercent = await getAPR()
 
-            this.currentAprPlaceholder.textContent = `Current APR: ${(+this.aprPercent * 100).toPrecision(2)}%`
+            this.currentAprPlaceholder.textContent = `Current APR: ${(+this.aprPercent * 100).toFixed(2)}%`
             this.startInput.placeholder = 'Enter an amount'
             this.startInput.disabled = false
             this.amountButtons.forEach(el => el.disabled = false)
@@ -204,7 +205,7 @@ const checkPaste = (e) => {
 
             const temp = this.startInput.value
             this.startInput.value = this.secondCurrency.textContent
-            this.secondCurrency.textContent = temp
+            this.secondCurrency.textContent = temp || '0.00'
 
             // this.calcSecondCurrency(this.startInput.value)
             // this.calcIncome()
