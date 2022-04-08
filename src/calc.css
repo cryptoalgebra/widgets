@@ -17,6 +17,7 @@
     background-color: var(--calc-bg);
     color: white;
     font-family: sans-serif;
+    border-radius: 8px;
 }
 .calculator__title {
     display: flex;
