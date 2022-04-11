@@ -72,7 +72,7 @@ const checkInput = (e) => {
 
     if (allowKeys.includes(e.key)) return
 
-    if (!regex.test(e.key) || (e.key === '.' && e.target.value.indexOf('.') > 0 ) ) {
+    if (!regex.test(e.key) || (e.key === '.' && e.target.value.indexOf('.') > 0)) {
         e.preventDefault()
     }
 }
@@ -80,7 +80,7 @@ const checkInput = (e) => {
 const checkPaste = (e) => {
     const data = e.clipboardData || window.clipboardData
 
-    if (!/^[0-9]*[.]?[0-9]*$/.test(data.getData('Text'))){
+    if (!/^[0-9]*[.]?[0-9]*$/.test(data.getData('Text'))) {
         e.preventDefault()
     }
 }
@@ -178,7 +178,7 @@ const checkPaste = (e) => {
 
         startInputChange(e) {
 
-            if (e.inputType === 'insertText' && !/^[0-9]*[.]?[0-9]*$/.test(e.data)){
+            if (e.inputType === 'insertText' && !/^[0-9]*[.]?[0-9]*$/.test(e.data)) {
                 e.preventDefault()
                 return
             }
@@ -206,9 +206,6 @@ const checkPaste = (e) => {
             const temp = this.startInput.value
             this.startInput.value = this.secondCurrency.textContent
             this.secondCurrency.textContent = temp || '0.00'
-
-            // this.calcSecondCurrency(this.startInput.value)
-            // this.calcIncome()
 
             if (this.isAlgb) {
                 this.inputCurrency.textContent = 'ALGB'
@@ -291,7 +288,7 @@ const checkPaste = (e) => {
             const _amount = parseFloat(amount === '' ? 0 : amount)
             const resInputVal = this.resultInput.value === '' ? 0 : this.resultInput.value
 
-            this.startInput.value = _amount / ((1 + this.aprPercent / earnTicks) ** (this.stakeDuration * earnTicks) -1)
+            this.startInput.value = _amount / ((1 + this.aprPercent / earnTicks) ** (this.stakeDuration * earnTicks) - 1)
             this.calcIncomePercent(resInputVal)
             this.resAlgb.textContent = '~ ' + (_amount / this.albgCourse).toFixed(2) + ' ALGB'
         }
@@ -302,7 +299,9 @@ const checkPaste = (e) => {
                 return
             }
 
-            this.incomePercent.textContent = '+ ' + (income * 100 / parseFloat(this.startInput.value)).toFixed(2) + '%'
+            const divValue = this.isAlgb ? parseFloat(this.startInput.value * this.albgCourse) : parseFloat(this.startInput.value)
+
+            this.incomePercent.textContent = '+ ' + (income * 100 / divValue).toFixed(2) + '%'
         }
 
         get balance() {
