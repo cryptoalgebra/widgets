@@ -13,7 +13,7 @@
 }
 
 .calculator {
-    width: 345px;
+    max-width: 345px;
     background-color: var(--calc-bg);
     color: white;
     font-family: sans-serif;
